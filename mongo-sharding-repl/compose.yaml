@@ -1,0 +1,131 @@
+name: mongo-sharding-repl
+
+services:
+  config-srv:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      - mongod
+      - --configsvr
+      - --replSet
+      - configReplSet
+      - --port
+      - "27019"
+      - --bind_ip_all
+    volumes:
+      - configsrv_data:/data/db
+
+  shard1-1:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      - mongod
+      - --shardsvr
+      - --replSet
+      - shard1ReplSet
+      - --port
+      - "27018"
+      - --bind_ip_all
+    volumes:
+      - shard1_1_data:/data/db
+
+  shard1-2:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      - mongod
+      - --shardsvr
+      - --replSet
+      - shard1ReplSet
+      - --port
+      - "27018"
+      - --bind_ip_all
+    volumes:
+      - shard1_2_data:/data/db
+
+  shard1-3:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      - mongod
+      - --shardsvr
+      - --replSet
+      - shard1ReplSet
+      - --port
+      - "27018"
+      - --bind_ip_all
+    volumes:
+      - shard1_3_data:/data/db
+
+  shard2-1:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      - mongod
+      - --shardsvr
+      - --replSet
+      - shard2ReplSet
+      - --port
+      - "27018"
+      - --bind_ip_all
+    volumes:
+      - shard2_1_data:/data/db
+
+  shard2-2:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      - mongod
+      - --shardsvr
+      - --replSet
+      - shard2ReplSet
+      - --port
+      - "27018"
+      - --bind_ip_all
+    volumes:
+      - shard2_2_data:/data/db
+
+  shard2-3:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      - mongod
+      - --shardsvr
+      - --replSet
+      - shard2ReplSet
+      - --port
+      - "27018"
+      - --bind_ip_all
+    volumes:
+      - shard2_3_data:/data/db
+
+  mongos:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    depends_on:
+      - config-srv
+      - shard1-1
+      - shard1-2
+      - shard1-3
+      - shard2-1
+      - shard2-2
+      - shard2-3
+    command:
+      - mongos
+      - --configdb
+      - configReplSet/config-srv:27019
+      - --port
+      - "27017"
+      - --bind_ip_all
+    restart: unless-stopped
+
+  pymongo-api:
+    image: kazhem/pymongo_api:1.0.0
+    depends_on:
+      - mongos
+    ports:
+      - "8080:8080"
+    environment:
+      MONGODB_URL: "mongodb://mongos:27017"
+      MONGODB_DATABASE_NAME: "somedb"
+
+volumes:
+  configsrv_data:
+  shard1_1_data:
+  shard1_2_data:
+  shard1_3_data:
+  shard2_1_data:
+  shard2_2_data:
+  shard2_3_data:
